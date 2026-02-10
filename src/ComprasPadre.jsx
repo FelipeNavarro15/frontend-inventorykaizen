@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = import.meta.env.VITE_API_URL;
 
 // Función para formatear fechas a dd-mm-yyyy
 const formatearFecha = (fecha) => {
@@ -45,7 +45,7 @@ const ComprasPadre = ({ productos, onCompraRegistrada }) => {
   // Cargar compras padre
   const loadComprasPadre = useCallback(async () => {
     try {
-      const response = await fetch(`${API_URL}/compras-padre/`);
+      const response = await fetch(`${API_URL}/api/compras-padre/`);
       const data = await response.json();
       setComprasPadre(data.results ?? data ?? []);
     } catch (error) {
@@ -161,7 +161,7 @@ const ComprasPadre = ({ productos, onCompraRegistrada }) => {
   const handleDelete = useCallback(async (compraId) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar esta compra?')) {
       try {
-        await fetch(`${API_URL}/compras-padre/${compraId}/`, {
+        await fetch(`${API_URL}/api/compras-padre/${compraId}/`, {
           method: 'DELETE'
         });
         alert('Compra eliminada exitosamente');
