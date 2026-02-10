@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import ComprasPadre from './ComprasPadre';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = import.meta.env.VITE_API_URL;
 
 // Función para formatear fechas a dd-mm-yyyy
 const formatearFecha = (fecha) => {
@@ -233,7 +233,7 @@ const FormularioCompras = ({ productos, onCompraRegistrada }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await fetch(`${API_URL}/compras/`, {
+      await fetch(`${API_URL}/api/compras/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(compraForm)
@@ -454,7 +454,7 @@ const App = () => {
 
   const fetchProductos = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/productos/`);
+      const res = await fetch(`${API_URL}/api/productos/`);
       const data = await res.json();
       setProductos(data.results ?? []);
     } catch (error) {
@@ -464,7 +464,7 @@ const App = () => {
 
   const fetchVentas = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/ventas/`);
+      const res = await fetch(`${API_URL}/api/ventas/`);
       const data = await res.json();
       setVentas(data.results ?? []);
     } catch (error) {
@@ -474,7 +474,7 @@ const App = () => {
 
   const fetchCompras = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/compras/`);
+      const res = await fetch(`${API_URL}/api/compras/`);
       const data = await res.json();
       setCompras(data.results ?? []);
     } catch (error) {
@@ -484,7 +484,7 @@ const App = () => {
 
   const fetchInventario = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/inventario/`);
+      const res = await fetch(`${API_URL}/api/inventario/`);
       const data = await res.json();
       setInventario(data);
     } catch (error) {
@@ -494,7 +494,7 @@ const App = () => {
 
   const fetchReporte = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/inventario/reporte_financiero/`);
+      const res = await fetch(`${API_URL}/api/inventario/reporte_financiero/`);
       const data = await res.json();
       setReporte(data);
     } catch (error) {
@@ -1245,7 +1245,7 @@ const App = () => {
                           if (window.confirm('¿Estás seguro de eliminar esta venta?')) {
                             (async () => {
                               try {
-                                await fetch(`${API_URL}/ventas/${v.id}/`, {
+                                await fetch(`${API_URL}/api/ventas/${v.id}/`, {
                                   method: 'DELETE'
                                 });
                                 alert('Venta eliminada exitosamente');
@@ -1330,7 +1330,7 @@ const App = () => {
     const handleDeleteProducto = async (productoId) => {
       if (window.confirm('¿Estás seguro de que deseas eliminar este producto? Se eliminarán todos sus registros de ventas y compras.')) {
         try {
-          await fetch(`${API_URL}/productos/${productoId}/`, {
+          await fetch(`${API_URL}/api/productos/${productoId}/`, {
             method: 'DELETE'
           });
           alert('Producto eliminado exitosamente');
