@@ -69,7 +69,7 @@ const FormularioVentas = ({ productos, ventas, initialVenta, onVentaRegistrada }
     setLoading(true);
     try {
       const method = editingId ? 'PUT' : 'POST';
-      const url = editingId ? `${API_URL}/ventas/${editingId}/` : `${API_URL}/ventas/`;
+      const url = editingId ? `${API_URL}/api/ventas/${editingId}/` : `${API_URL}/api/ventas/`;
       
       await fetch(url, {
         method,
@@ -374,7 +374,7 @@ const FormularioProductos = ({ onProductoRegistrado, initialProducto }) => {
     setLoading(true);
     try {
       const method = editingId ? 'PUT' : 'POST';
-      const url = editingId ? `${API_URL}/productos/${editingId}/` : `${API_URL}/productos/`;
+      const url = editingId ? `${API_URL}/api/productos/${editingId}/` : `${API_URL}/api/productos/`;
       
       await fetch(url, {
         method,
