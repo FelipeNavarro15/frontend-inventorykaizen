@@ -102,7 +102,7 @@ const ComprasPadre = ({ productos, onCompraRegistrada }) => {
     setLoading(true);
     try {
       const method = editingId ? 'PUT' : 'POST';
-      const url = editingId ? `${API_URL}/compras-padre/${editingId}/` : `${API_URL}/compras-padre/`;
+      const url = editingId ? `${API_URL}/api/compras-padre/${editingId}/` : `${API_URL}/api/compras-padre/`;
       
       console.log('Enviando datos:', compraForm);
       
