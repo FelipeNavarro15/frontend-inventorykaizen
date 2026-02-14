@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import ComprasPadre from './ComprasPadre';
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { createVenta, updateVenta, deleteVenta, fetchVentas } from './api/ventas';
+import { createCompra, fetchCompras } from './api/compras';
+import { createProducto, updateProducto, deleteProducto, fetchProductos } from './api/productos';
+import { fetchInventario, fetchReporteFinanciero } from './api/inventario';
 
 // Función para formatear fechas a dd-mm-yyyy
 const formatearFecha = (fecha) => {
@@ -68,14 +70,11 @@ const FormularioVentas = ({ productos, ventas, initialVenta, onVentaRegistrada }
     e.preventDefault();
     setLoading(true);
     try {
-      const method = editingId ? 'PUT' : 'POST';
-      const url = editingId ? `${API_URL}/api/ventas/${editingId}/` : `${API_URL}/api/ventas/`;
-      
-      await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(ventaForm)
-      });
+      if (editingId) {
+        await updateVenta(editingId, ventaForm);
+      } else {
+        await createVenta(ventaForm);
+      }
       setVentaForm({
         producto: '',
         fecha: obtenerFechaLocal(),
@@ -233,11 +232,7 @@ const FormularioCompras = ({ productos, onCompraRegistrada }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await fetch(`${API_URL}/api/compras/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(compraForm)
-      });
+      await createCompra(compraForm);
       setCompraForm({
         producto: '',
         fecha: obtenerFechaLocal(),
@@ -373,14 +368,11 @@ const FormularioProductos = ({ onProductoRegistrado, initialProducto }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const method = editingId ? 'PUT' : 'POST';
-      const url = editingId ? `${API_URL}/api/productos/${editingId}/` : `${API_URL}/api/productos/`;
-      
-      await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(productoForm)
-      });
+      if (editingId) {
+        await updateProducto(editingId, productoForm);
+      } else {
+        await createProducto(productoForm);
+      }
       setProductoForm({
         nombre: '',
         unidad_medida: '',
@@ -452,50 +444,45 @@ const App = () => {
   const [reporte, setReporte] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  const fetchProductos = useCallback(async () => {
+  const loadProductos = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/api/productos/`);
-      const data = await res.json();
-      setProductos(data.results ?? []);
+      const data = await fetchProductos();
+      setProductos(Array.isArray(data) ? data : data.results ?? []);
     } catch (error) {
       console.error('Error:', error);
     }
   }, []);
 
-  const fetchVentas = useCallback(async () => {
+  const loadVentas = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/api/ventas/`);
-      const data = await res.json();
-      setVentas(data.results ?? []);
+      const data = await fetchVentas();
+      setVentas(Array.isArray(data) ? data : data.results ?? []);
     } catch (error) {
       console.error('Error:', error);
     }
   }, []);
 
-  const fetchCompras = useCallback(async () => {
+  const loadCompras = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/api/compras/`);
-      const data = await res.json();
-      setCompras(data.results ?? []);
+      const data = await fetchCompras();
+      setCompras(Array.isArray(data) ? data : data.results ?? []);
     } catch (error) {
       console.error('Error:', error);
     }
   }, []);
 
-  const fetchInventario = useCallback(async () => {
+  const loadInventario = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/api/inventario/`);
-      const data = await res.json();
+      const data = await fetchInventario();
       setInventario(data);
     } catch (error) {
       console.error('Error:', error);
     }
   }, []);
 
-  const fetchReporte = useCallback(async () => {
+  const loadReporte = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/api/inventario/reporte_financiero/`);
-      const data = await res.json();
+      const data = await fetchReporteFinanciero();
       setReporte(data);
     } catch (error) {
       console.error('Error:', error);
@@ -504,12 +491,12 @@ const App = () => {
 
   // Cargar datos solo una vez al montar
   useEffect(() => {
-    fetchProductos();
-    fetchVentas();
-    fetchCompras();
-    fetchInventario();
-    fetchReporte();
-  }, [fetchProductos, fetchVentas, fetchCompras, fetchInventario, fetchReporte]);
+    loadProductos();
+    loadVentas();
+    loadCompras();
+    loadInventario();
+    loadReporte();
+  }, [loadProductos, loadVentas, loadCompras, loadInventario, loadReporte]);
 
   // Función helper para calcular la semana ISO con formato personalizado
   const getWeekInfo = (dateStr) => {
@@ -1191,9 +1178,9 @@ const App = () => {
             initialVenta={editingVenta}
             onVentaRegistrada={() => {
               setEditingVenta(null);
-              fetchVentas();
-              fetchInventario();
-              fetchReporte();
+              loadVentas();
+              loadInventario();
+              loadReporte();
             }}
           />
         </div>
@@ -1245,13 +1232,11 @@ const App = () => {
                           if (window.confirm('¿Estás seguro de eliminar esta venta?')) {
                             (async () => {
                               try {
-                                await fetch(`${API_URL}/api/ventas/${v.id}/`, {
-                                  method: 'DELETE'
-                                });
+                                await deleteVenta(v.id);
                                 alert('Venta eliminada exitosamente');
-                                fetchVentas();
-                                fetchInventario();
-                                fetchReporte();
+                                loadVentas();
+                                loadInventario();
+                                loadReporte();
                               } catch (error) {
                                 alert('Error al eliminar venta');
                               }
@@ -1281,9 +1266,9 @@ const App = () => {
       <ComprasPadre 
         productos={productos}
         onCompraRegistrada={() => {
-          fetchCompras();
-          fetchInventario();
-          fetchReporte();
+          loadCompras();
+          loadInventario();
+          loadReporte();
         }}
       />
     </div>
@@ -1330,16 +1315,14 @@ const App = () => {
     const handleDeleteProducto = async (productoId) => {
       if (window.confirm('¿Estás seguro de que deseas eliminar este producto? Se eliminarán todos sus registros de ventas y compras.')) {
         try {
-          await fetch(`${API_URL}/api/productos/${productoId}/`, {
-            method: 'DELETE'
-          });
+          await deleteProducto(productoId);
           alert('Producto eliminado exitosamente');
           setEditingProducto(null);
-          fetchProductos();
-          fetchInventario();
-          fetchVentas();
-          fetchCompras();
-          fetchReporte();
+          loadProductos();
+          loadInventario();
+          loadVentas();
+          loadCompras();
+          loadReporte();
         } catch (error) {
           console.error('Error:', error);
           alert('Error al eliminar producto');
@@ -1364,8 +1347,8 @@ const App = () => {
           <FormularioProductos 
             onProductoRegistrado={() => {
               setEditingProducto(null);
-              fetchProductos();
-              fetchInventario();
+              loadProductos();
+              loadInventario();
             }}
             initialProducto={editingProducto}
           />

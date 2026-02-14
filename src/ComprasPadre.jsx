@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { fetchComprasPadre, createCompraPadre, updateCompraPadre, deleteCompraPadre } from './api/comprasPadre';
 
 // Función para formatear fechas a dd-mm-yyyy
 const formatearFecha = (fecha) => {
@@ -45,9 +44,8 @@ const ComprasPadre = ({ productos, onCompraRegistrada }) => {
   // Cargar compras padre
   const loadComprasPadre = useCallback(async () => {
     try {
-      const response = await fetch(`${API_URL}/api/compras-padre/`);
-      const data = await response.json();
-      setComprasPadre(data.results ?? data ?? []);
+      const data = await fetchComprasPadre();
+      setComprasPadre(Array.isArray(data) ? data : data.results ?? []);
     } catch (error) {
       console.error('Error al cargar compras padre:', error);
     }
@@ -101,27 +99,16 @@ const ComprasPadre = ({ productos, onCompraRegistrada }) => {
 
     setLoading(true);
     try {
-      const method = editingId ? 'PUT' : 'POST';
-      const url = editingId ? `${API_URL}/api/compras-padre/${editingId}/` : `${API_URL}/api/compras-padre/`;
-      
-      console.log('Enviando datos:', compraForm);
-      
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(compraForm)
-      });
-
-      if (response.ok) {
-        alert(editingId ? 'Compra actualizada exitosamente' : 'Compra registrada exitosamente');
-        resetForm();
-        loadComprasPadre();
-        if (onCompraRegistrada) onCompraRegistrada();
+      if (editingId) {
+        await updateCompraPadre(editingId, compraForm);
       } else {
-        const errorData = await response.json();
-        console.error('Error response:', errorData);
-        alert('Error al registrar/actualizar compra: ' + JSON.stringify(errorData));
+        await createCompraPadre(compraForm);
       }
+      
+      alert(editingId ? 'Compra actualizada exitosamente' : 'Compra registrada exitosamente');
+      resetForm();
+      loadComprasPadre();
+      if (onCompraRegistrada) onCompraRegistrada();
     } catch (error) {
       console.error('Error:', error);
       alert('Error al registrar/actualizar compra: ' + error.message);
@@ -161,9 +148,7 @@ const ComprasPadre = ({ productos, onCompraRegistrada }) => {
   const handleDelete = useCallback(async (compraId) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar esta compra?')) {
       try {
-        await fetch(`${API_URL}/api/compras-padre/${compraId}/`, {
-          method: 'DELETE'
-        });
+        await deleteCompraPadre(compraId);
         alert('Compra eliminada exitosamente');
         loadComprasPadre();
       } catch (error) {
