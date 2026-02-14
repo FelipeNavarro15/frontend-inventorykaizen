@@ -6,18 +6,8 @@ import { createCompra, fetchCompras } from './api/compras';
 import { createProducto, updateProducto, deleteProducto, fetchProductos } from './api/productos';
 import { fetchInventario, fetchReporteFinanciero } from './api/inventario';
 import Login from "./Login";
-import { logout } from "./api/auth";
-import Dashboard from "./Dashboard"; // mi app normal
-import { isAuthenticated } from "./api/auth";
-function App() {
-  const [auth, setAuth] = useState(isAuthenticated());
+import { logout, isAuthenticated } from "./api/auth";
 
-  return auth ? (
-    <Dashboard onLogout={() => setAuth(false)} />
-  ) : (
-    <Login onLogin={() => setAuth(true)} />
-  );
-}
 
 
 
@@ -458,6 +448,7 @@ const App = () => {
   const [inventario, setInventario] = useState([]);
   const [reporte, setReporte] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [auth, setAuth] = useState(isAuthenticated());
 
   const loadProductos = useCallback(async () => {
     try {
@@ -758,6 +749,7 @@ const App = () => {
     );
   };
 
+  
   // Dashboard
   const DashboardTab = () => {
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
@@ -1417,6 +1409,11 @@ const App = () => {
       </div>
     );
   };
+  
+  // Retornar Login o Dashboard basado en autenticación
+  if (!auth) {
+    return <Login onLogin={() => setAuth(true)} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -1431,11 +1428,14 @@ const App = () => {
           </svg>
         </button>
         <h1 className="text-lg md:text-2xl font-bold flex-1 md:flex-initial">Sistema de Inventario - Kaizen F&F</h1>
-        <button onClick={() => {
-          logout();
-          window.location.reload();
-        }}>
-          Cerrar sesión
+        <button 
+          onClick={() => {
+            logout();
+            setAuth(false);
+          }}
+          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition flex items-center gap-2 text-sm md:text-base"
+        >
+          🚪 Cerrar sesión
         </button>
       </nav>
 
@@ -1471,8 +1471,8 @@ const App = () => {
                   setSidebarOpen(false);
                 }}
                 className={`w-full text-left px-4 py-3 rounded mb-2 transition ${activeTab === 'dashboard'
-                    ? 'bg-blue-500 text-white'
-                    : 'hover:bg-gray-100'
+                  ? 'bg-blue-500 text-white'
+                  : 'hover:bg-gray-100'
                   }`}
               >
                 📊 Dashboard
@@ -1483,8 +1483,8 @@ const App = () => {
                   setSidebarOpen(false);
                 }}
                 className={`w-full text-left px-4 py-3 rounded mb-2 transition ${activeTab === 'ventas'
-                    ? 'bg-blue-500 text-white'
-                    : 'hover:bg-gray-100'
+                  ? 'bg-blue-500 text-white'
+                  : 'hover:bg-gray-100'
                   }`}
               >
                 💰 Ventas
@@ -1495,8 +1495,8 @@ const App = () => {
                   setSidebarOpen(false);
                 }}
                 className={`w-full text-left px-4 py-3 rounded mb-2 transition ${activeTab === 'compras'
-                    ? 'bg-blue-500 text-white'
-                    : 'hover:bg-gray-100'
+                  ? 'bg-blue-500 text-white'
+                  : 'hover:bg-gray-100'
                   }`}
               >
                 🛒 Compras
@@ -1507,8 +1507,8 @@ const App = () => {
                   setSidebarOpen(false);
                 }}
                 className={`w-full text-left px-4 py-3 rounded mb-2 transition ${activeTab === 'inventario'
-                    ? 'bg-blue-500 text-white'
-                    : 'hover:bg-gray-100'
+                  ? 'bg-blue-500 text-white'
+                  : 'hover:bg-gray-100'
                   }`}
               >
                 📦 Inventario
@@ -1519,8 +1519,8 @@ const App = () => {
                   setSidebarOpen(false);
                 }}
                 className={`w-full text-left px-4 py-3 rounded mb-2 transition ${activeTab === 'productos'
-                    ? 'bg-blue-500 text-white'
-                    : 'hover:bg-gray-100'
+                  ? 'bg-blue-500 text-white'
+                  : 'hover:bg-gray-100'
                   }`}
               >
                 🏷️ Productos
