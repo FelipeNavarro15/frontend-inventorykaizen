@@ -5,6 +5,21 @@ import { createVenta, updateVenta, deleteVenta, fetchVentas } from './api/ventas
 import { createCompra, fetchCompras } from './api/compras';
 import { createProducto, updateProducto, deleteProducto, fetchProductos } from './api/productos';
 import { fetchInventario, fetchReporteFinanciero } from './api/inventario';
+import Login from "./Login";
+import { logout } from "./api/auth";
+import Dashboard from "./Dashboard"; // mi app normal
+import { isAuthenticated } from "./api/auth";
+function App() {
+  const [auth, setAuth] = useState(isAuthenticated());
+
+  return auth ? (
+    <Dashboard onLogout={() => setAuth(false)} />
+  ) : (
+    <Login onLogin={() => setAuth(true)} />
+  );
+}
+
+
 
 // Función para formatear fechas a dd-mm-yyyy
 const formatearFecha = (fecha) => {
@@ -101,7 +116,7 @@ const FormularioVentas = ({ productos, ventas, initialVenta, onVentaRegistrada }
           <label className="block text-xs md:text-sm font-medium mb-1">Producto *</label>
           <select
             value={ventaForm.producto}
-            onChange={(e) => setVentaForm({...ventaForm, producto: e.target.value})}
+            onChange={(e) => setVentaForm({ ...ventaForm, producto: e.target.value })}
             className="w-full border rounded px-3 py-2 text-xs md:text-sm"
             required
           >
@@ -117,7 +132,7 @@ const FormularioVentas = ({ productos, ventas, initialVenta, onVentaRegistrada }
           <input
             type="date"
             value={ventaForm.fecha}
-            onChange={(e) => setVentaForm({...ventaForm, fecha: e.target.value})}
+            onChange={(e) => setVentaForm({ ...ventaForm, fecha: e.target.value })}
             className="w-full border rounded px-3 py-2 text-xs md:text-sm"
             required
           />
@@ -127,7 +142,7 @@ const FormularioVentas = ({ productos, ventas, initialVenta, onVentaRegistrada }
           <label className="block text-xs md:text-sm font-medium mb-1">Canal de Venta *</label>
           <select
             value={ventaForm.canal_venta}
-            onChange={(e) => setVentaForm({...ventaForm, canal_venta: e.target.value})}
+            onChange={(e) => setVentaForm({ ...ventaForm, canal_venta: e.target.value })}
             className="w-full border rounded px-3 py-2 text-xs md:text-sm"
             required
           >
@@ -144,7 +159,7 @@ const FormularioVentas = ({ productos, ventas, initialVenta, onVentaRegistrada }
           <input
             type="text"
             value={ventaForm.cliente}
-            onChange={(e) => setVentaForm({...ventaForm, cliente: e.target.value})}
+            onChange={(e) => setVentaForm({ ...ventaForm, cliente: e.target.value })}
             className="w-full border rounded px-3 py-2 text-xs md:text-sm"
             required
           />
@@ -156,7 +171,7 @@ const FormularioVentas = ({ productos, ventas, initialVenta, onVentaRegistrada }
             type="number"
             step="1"
             value={ventaForm.cantidad}
-            onChange={(e) => setVentaForm({...ventaForm, cantidad: e.target.value})}
+            onChange={(e) => setVentaForm({ ...ventaForm, cantidad: e.target.value })}
             className="w-full border rounded px-3 py-2 text-xs md:text-sm"
             required
           />
@@ -168,7 +183,7 @@ const FormularioVentas = ({ productos, ventas, initialVenta, onVentaRegistrada }
             type="number"
             step="1"
             value={ventaForm.precio_unitario}
-            onChange={(e) => setVentaForm({...ventaForm, precio_unitario: e.target.value})}
+            onChange={(e) => setVentaForm({ ...ventaForm, precio_unitario: e.target.value })}
             className="w-full border rounded px-3 py-2 text-xs md:text-sm"
             required
           />
@@ -178,7 +193,7 @@ const FormularioVentas = ({ productos, ventas, initialVenta, onVentaRegistrada }
           <label className="block text-xs md:text-sm font-medium mb-1">Método de Pago *</label>
           <select
             value={ventaForm.metodo_pago}
-            onChange={(e) => setVentaForm({...ventaForm, metodo_pago: e.target.value})}
+            onChange={(e) => setVentaForm({ ...ventaForm, metodo_pago: e.target.value })}
             className="w-full border rounded px-3 py-2 text-xs md:text-sm"
             required
           >
@@ -195,7 +210,7 @@ const FormularioVentas = ({ productos, ventas, initialVenta, onVentaRegistrada }
             <input
               type="checkbox"
               checked={ventaForm.pagado}
-              onChange={(e) => setVentaForm({...ventaForm, pagado: e.target.checked})}
+              onChange={(e) => setVentaForm({ ...ventaForm, pagado: e.target.checked })}
               className="mr-2"
             />
             <span className="text-xs md:text-sm font-medium">¿Pagado?</span>
@@ -256,7 +271,7 @@ const FormularioCompras = ({ productos, onCompraRegistrada }) => {
         <label className="block text-xs md:text-sm font-medium mb-1">Producto *</label>
         <select
           value={compraForm.producto}
-          onChange={(e) => setCompraForm({...compraForm, producto: e.target.value})}
+          onChange={(e) => setCompraForm({ ...compraForm, producto: e.target.value })}
           className="w-full border rounded px-3 py-2 text-xs md:text-sm"
           required
         >
@@ -272,7 +287,7 @@ const FormularioCompras = ({ productos, onCompraRegistrada }) => {
         <input
           type="date"
           value={compraForm.fecha}
-          onChange={(e) => setCompraForm({...compraForm, fecha: e.target.value})}
+          onChange={(e) => setCompraForm({ ...compraForm, fecha: e.target.value })}
           className="w-full border rounded px-3 py-2 text-xs md:text-sm"
           required
         />
@@ -284,7 +299,7 @@ const FormularioCompras = ({ productos, onCompraRegistrada }) => {
           type="number"
           step="1"
           value={compraForm.cantidad}
-          onChange={(e) => setCompraForm({...compraForm, cantidad: e.target.value})}
+          onChange={(e) => setCompraForm({ ...compraForm, cantidad: e.target.value })}
           className="w-full border rounded px-3 py-2 text-xs md:text-sm"
           required
         />
@@ -296,7 +311,7 @@ const FormularioCompras = ({ productos, onCompraRegistrada }) => {
           type="number"
           step="1"
           value={compraForm.costo_unitario}
-          onChange={(e) => setCompraForm({...compraForm, costo_unitario: e.target.value})}
+          onChange={(e) => setCompraForm({ ...compraForm, costo_unitario: e.target.value })}
           className="w-full border rounded px-3 py-2 text-xs md:text-sm"
           required
         />
@@ -308,7 +323,7 @@ const FormularioCompras = ({ productos, onCompraRegistrada }) => {
           type="number"
           step="1"
           value={compraForm.valor_venta}
-          onChange={(e) => setCompraForm({...compraForm, valor_venta: e.target.value})}
+          onChange={(e) => setCompraForm({ ...compraForm, valor_venta: e.target.value })}
           className="w-full border rounded px-3 py-2 text-xs md:text-sm"
           required
         />
@@ -319,7 +334,7 @@ const FormularioCompras = ({ productos, onCompraRegistrada }) => {
         <input
           type="text"
           value={compraForm.proveedor}
-          onChange={(e) => setCompraForm({...compraForm, proveedor: e.target.value})}
+          onChange={(e) => setCompraForm({ ...compraForm, proveedor: e.target.value })}
           className="w-full border rounded px-3 py-2 text-xs md:text-sm"
           required
         />
@@ -394,7 +409,7 @@ const FormularioProductos = ({ onProductoRegistrado, initialProducto }) => {
         <input
           type="text"
           value={productoForm.nombre}
-          onChange={(e) => setProductoForm({...productoForm, nombre: e.target.value})}
+          onChange={(e) => setProductoForm({ ...productoForm, nombre: e.target.value })}
           className="w-full border rounded px-3 py-2 text-xs md:text-sm"
           required
         />
@@ -406,7 +421,7 @@ const FormularioProductos = ({ onProductoRegistrado, initialProducto }) => {
           type="text"
           placeholder="ej: 1,36 kg"
           value={productoForm.unidad_medida}
-          onChange={(e) => setProductoForm({...productoForm, unidad_medida: e.target.value})}
+          onChange={(e) => setProductoForm({ ...productoForm, unidad_medida: e.target.value })}
           className="w-full border rounded px-3 py-2 text-xs md:text-sm"
           required
         />
@@ -416,7 +431,7 @@ const FormularioProductos = ({ onProductoRegistrado, initialProducto }) => {
         <label className="block text-xs md:text-sm font-medium mb-1">Descripción</label>
         <textarea
           value={productoForm.descripcion}
-          onChange={(e) => setProductoForm({...productoForm, descripcion: e.target.value})}
+          onChange={(e) => setProductoForm({ ...productoForm, descripcion: e.target.value })}
           className="w-full border rounded px-3 py-2 text-xs md:text-sm"
           rows="3"
         />
@@ -503,10 +518,10 @@ const App = () => {
     const date = new Date(dateStr + 'T00:00:00');
     const year = date.getFullYear();
     const dayOfWeek = date.getDay(); // 0 = domingo, 1 = lunes, ..., 6 = sábado
-    
+
     const firstDayOfYear = new Date(year, 0, 1);
     const firstDayOfWeek = firstDayOfYear.getDay();
-    
+
     // Calcular el primer domingo del año
     let firstSunday;
     if (firstDayOfWeek === 0) {
@@ -517,7 +532,7 @@ const App = () => {
       const daysUntilSunday = (7 - firstDayOfWeek + 1) % 7;
       firstSunday = new Date(year, 0, 1 + daysUntilSunday);
     }
-    
+
     // Si la fecha es antes del primer domingo, pertenece a W01
     if (date < firstSunday) {
       return {
@@ -526,21 +541,21 @@ const App = () => {
         weekEnd: new Date(firstSunday)
       };
     }
-    
+
     // Para fechas después del primer domingo, calcular semana completa (lunes a domingo)
     // Obtener el lunes de esta semana
     const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // días desde lunes
     const monday = new Date(date);
     monday.setDate(monday.getDate() - diff);
-    
+
     // Calcular número de semana
     const weeksSinceFirstSunday = Math.floor((date.getTime() - firstSunday.getTime()) / (7 * 24 * 60 * 60 * 1000));
     const weekNumber = weeksSinceFirstSunday + 2; // +2 porque empieza con W02
-    
+
     // Calcular domingo de esta semana
     const sunday = new Date(monday);
     sunday.setDate(sunday.getDate() + 6);
-    
+
     return {
       weekKey: `${year}-W${String(weekNumber).padStart(2, '0')}`,
       weekStart: new Date(monday),
@@ -554,7 +569,7 @@ const App = () => {
 
     // Agrupar por mes para comparativa
     const datosPorMes = {};
-    
+
     // Sumar ingresos por mes
     (Array.isArray(ventas) ? ventas : ventas?.results ?? []).forEach(v => {
       const date = new Date(v.fecha + 'T00:00:00');
@@ -587,7 +602,7 @@ const App = () => {
         >
           ← Volver al Dashboard
         </button>
-        
+
         <h2 className="text-2xl md:text-3xl font-bold mb-6">Comparativa: Ingresos vs Gastos</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -596,12 +611,12 @@ const App = () => {
             <p className="text-2xl md:text-3xl font-bold">${Math.abs(gananciaTotal)}</p>
             <p className="text-xs mt-2">{gananciaTotal >= 0 ? 'Positivo' : 'Negativo'}</p>
           </div>
-          
+
           <div className="bg-blue-500 text-white p-4 md:p-6 rounded-lg shadow">
             <h3 className="text-xs md:text-sm font-semibold mb-2">Total Ingresos</h3>
             <p className="text-2xl md:text-3xl font-bold">${dataComparativa.reduce((sum, d) => sum + d.ingresos, 0)}</p>
           </div>
-          
+
           <div className="bg-red-500 text-white p-4 md:p-6 rounded-lg shadow">
             <h3 className="text-xs md:text-sm font-semibold mb-2">Total Gastos</h3>
             <p className="text-2xl md:text-3xl font-bold">${dataComparativa.reduce((sum, d) => sum + d.gastos, 0)}</p>
@@ -675,7 +690,7 @@ const App = () => {
         >
           ← Volver al Dashboard
         </button>
-        
+
         <h2 className="text-2xl md:text-3xl font-bold mb-6">Ventas Pendientes de Pago</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -684,7 +699,7 @@ const App = () => {
             <p className="text-2xl md:text-3xl font-bold">${totalPendiente}</p>
             <p className="text-xs mt-2">{ventasPendientes.length} ventas</p>
           </div>
-          
+
           <div className="bg-blue-500 text-white p-4 md:p-6 rounded-lg shadow">
             <h3 className="text-xs md:text-sm font-semibold mb-2">Clientes Deudores</h3>
             <p className="text-2xl md:text-3xl font-bold">{new Set(ventasPendientes.map(v => v.cliente)).size}</p>
@@ -711,8 +726,8 @@ const App = () => {
                 </thead>
                 <tbody>
                   {ventasPendientes.map((v) => (
-                    <tr 
-                      key={v.id} 
+                    <tr
+                      key={v.id}
                       className="border-b hover:bg-yellow-50 transition"
                     >
                       <td className="p-2 md:p-3 font-semibold text-xs md:text-sm whitespace-nowrap">#{v.numero}</td>
@@ -774,7 +789,7 @@ const App = () => {
     return (
       <div className="p-4 md:p-6">
         <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Dashboard</h2>
-        
+
         {reporte && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
             <button
@@ -786,7 +801,7 @@ const App = () => {
               <p className="text-xs mt-2">{reporte.cantidad_ventas} ventas</p>
               <p className="text-xs mt-1 opacity-75">📈 Ver detalle</p>
             </button>
-            
+
             <button
               onClick={() => setActiveTab('gastos')}
               className="bg-red-500 text-white p-4 md:p-6 rounded-lg shadow hover:shadow-lg hover:scale-105 transition transform cursor-pointer"
@@ -796,7 +811,7 @@ const App = () => {
               <p className="text-xs mt-2">{reporte.cantidad_compras} compras</p>
               <p className="text-xs mt-1 opacity-75">📈 Ver detalle</p>
             </button>
-            
+
             <button
               onClick={() => setActiveTab('comparativa')}
               className={`${reporte.ganancia_perdida >= 0 ? 'bg-green-500' : 'bg-orange-500'} text-white p-4 md:p-6 rounded-lg shadow hover:shadow-lg hover:scale-105 transition transform cursor-pointer`}
@@ -807,7 +822,7 @@ const App = () => {
               <p className="text-2xl md:text-3xl font-bold">${Math.abs(reporte.ganancia_perdida)}</p>
               <p className="text-xs mt-1 opacity-75">📊 Ver detalle</p>
             </button>
-            
+
             <button
               onClick={() => setActiveTab('porpagar')}
               className="bg-yellow-500 text-white p-4 md:p-6 rounded-lg shadow hover:shadow-lg hover:scale-105 transition transform cursor-pointer"
@@ -926,7 +941,7 @@ const App = () => {
         >
           ← Volver al Dashboard
         </button>
-        
+
         <h2 className="text-2xl md:text-3xl font-bold mb-6">Análisis de Ingresos</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -1074,7 +1089,7 @@ const App = () => {
         >
           ← Volver al Dashboard
         </button>
-        
+
         <h2 className="text-2xl md:text-3xl font-bold mb-6">Análisis de Gastos</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -1152,7 +1167,7 @@ const App = () => {
   // Ventas Tab
   const VentasTab = () => {
     const [editingVenta, setEditingVenta] = useState(null);
-    
+
     const handleEditVenta = (venta) => {
       setEditingVenta(venta);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1161,7 +1176,7 @@ const App = () => {
     return (
       <div className="p-4 md:p-6">
         <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Gestión de Ventas</h2>
-        
+
         <div className="bg-white p-4 md:p-6 rounded-lg shadow mb-6">
           <h3 className="text-lg md:text-xl font-bold mb-4">{editingVenta ? 'Editar Venta' : 'Registrar Nueva Venta'}</h3>
           {editingVenta && (
@@ -1172,7 +1187,7 @@ const App = () => {
               ← Volver a Nueva Venta
             </button>
           )}
-          <FormularioVentas 
+          <FormularioVentas
             productos={productos}
             ventas={ventas}
             initialVenta={editingVenta}
@@ -1207,8 +1222,8 @@ const App = () => {
               </thead>
               <tbody>
                 {ventas.map((v) => (
-                  <tr 
-                    key={v.id} 
+                  <tr
+                    key={v.id}
                     onClick={() => handleEditVenta(v)}
                     className="border-b hover:bg-blue-50 cursor-pointer transition"
                   >
@@ -1263,7 +1278,7 @@ const App = () => {
   const ComprasTab = () => (
     <div className="p-4 md:p-6">
       <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Gestión de Compras</h2>
-      <ComprasPadre 
+      <ComprasPadre
         productos={productos}
         onCompraRegistrada={() => {
           loadCompras();
@@ -1278,7 +1293,7 @@ const App = () => {
   const InventarioTab = () => (
     <div className="p-4 md:p-6">
       <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Inventario Actual</h2>
-      
+
       <div className="bg-white p-4 md:p-6 rounded-lg shadow">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
           {inventario.map((item, idx) => (
@@ -1306,7 +1321,7 @@ const App = () => {
   // Productos Tab
   const ProductosTab = () => {
     const [editingProducto, setEditingProducto] = useState(null);
-    
+
     const handleEditProducto = (producto) => {
       setEditingProducto(producto);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1333,7 +1348,7 @@ const App = () => {
     return (
       <div className="p-4 md:p-6">
         <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Gestión de Productos</h2>
-        
+
         <div className="bg-white p-4 md:p-6 rounded-lg shadow mb-6">
           <h3 className="text-lg md:text-xl font-bold mb-4">{editingProducto ? 'Editar Producto' : 'Agregar Nuevo Producto'}</h3>
           {editingProducto && (
@@ -1344,7 +1359,7 @@ const App = () => {
               ← Volver a Nuevo Producto
             </button>
           )}
-          <FormularioProductos 
+          <FormularioProductos
             onProductoRegistrado={() => {
               setEditingProducto(null);
               loadProductos();
@@ -1358,8 +1373,8 @@ const App = () => {
           <h3 className="text-lg md:text-xl font-bold mb-4">Lista de Productos</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
             {productos.map(p => (
-              <div 
-                key={p.id} 
+              <div
+                key={p.id}
                 onClick={() => handleEditProducto(p)}
                 className="border rounded-lg p-3 md:p-4 hover:shadow-lg transition cursor-pointer hover:border-blue-400"
               >
@@ -1416,6 +1431,12 @@ const App = () => {
           </svg>
         </button>
         <h1 className="text-lg md:text-2xl font-bold flex-1 md:flex-initial">Sistema de Inventario - Kaizen F&F</h1>
+        <button onClick={() => {
+          logout();
+          window.location.reload();
+        }}>
+          Cerrar sesión
+        </button>
       </nav>
 
       <div className="flex relative">
@@ -1429,9 +1450,8 @@ const App = () => {
 
         {/* Sidebar */}
         <aside
-          className={`fixed md:relative w-64 bg-white h-screen shadow-lg z-40 transform transition-transform duration-300 ease-in-out ${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-          }`}
+          className={`fixed md:relative w-64 bg-white h-screen shadow-lg z-40 transform transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+            }`}
         >
           <div className="p-4 flex flex-col h-full">
             <button
@@ -1450,11 +1470,10 @@ const App = () => {
                   setActiveTab('dashboard');
                   setSidebarOpen(false);
                 }}
-                className={`w-full text-left px-4 py-3 rounded mb-2 transition ${
-                  activeTab === 'dashboard'
+                className={`w-full text-left px-4 py-3 rounded mb-2 transition ${activeTab === 'dashboard'
                     ? 'bg-blue-500 text-white'
                     : 'hover:bg-gray-100'
-                }`}
+                  }`}
               >
                 📊 Dashboard
               </button>
@@ -1463,11 +1482,10 @@ const App = () => {
                   setActiveTab('ventas');
                   setSidebarOpen(false);
                 }}
-                className={`w-full text-left px-4 py-3 rounded mb-2 transition ${
-                  activeTab === 'ventas'
+                className={`w-full text-left px-4 py-3 rounded mb-2 transition ${activeTab === 'ventas'
                     ? 'bg-blue-500 text-white'
                     : 'hover:bg-gray-100'
-                }`}
+                  }`}
               >
                 💰 Ventas
               </button>
@@ -1476,11 +1494,10 @@ const App = () => {
                   setActiveTab('compras');
                   setSidebarOpen(false);
                 }}
-                className={`w-full text-left px-4 py-3 rounded mb-2 transition ${
-                  activeTab === 'compras'
+                className={`w-full text-left px-4 py-3 rounded mb-2 transition ${activeTab === 'compras'
                     ? 'bg-blue-500 text-white'
                     : 'hover:bg-gray-100'
-                }`}
+                  }`}
               >
                 🛒 Compras
               </button>
@@ -1489,11 +1506,10 @@ const App = () => {
                   setActiveTab('inventario');
                   setSidebarOpen(false);
                 }}
-                className={`w-full text-left px-4 py-3 rounded mb-2 transition ${
-                  activeTab === 'inventario'
+                className={`w-full text-left px-4 py-3 rounded mb-2 transition ${activeTab === 'inventario'
                     ? 'bg-blue-500 text-white'
                     : 'hover:bg-gray-100'
-                }`}
+                  }`}
               >
                 📦 Inventario
               </button>
@@ -1502,11 +1518,10 @@ const App = () => {
                   setActiveTab('productos');
                   setSidebarOpen(false);
                 }}
-                className={`w-full text-left px-4 py-3 rounded mb-2 transition ${
-                  activeTab === 'productos'
+                className={`w-full text-left px-4 py-3 rounded mb-2 transition ${activeTab === 'productos'
                     ? 'bg-blue-500 text-white'
                     : 'hover:bg-gray-100'
-                }`}
+                  }`}
               >
                 🏷️ Productos
               </button>
