@@ -138,8 +138,9 @@ const FormularioVentas = ({ productos, ventas, initialVenta, onVentaRegistrada }
           >
             <option value="local">Local</option>
             <option value="whatsapp">WhatsApp</option>
+            <option value="messenger">Messenger</option>
+            <option value="instagram">Instagram</option>
             <option value="telefono">Teléfono</option>
-            <option value="delivery">Delivery</option>
             <option value="otro">Otro</option>
           </select>
         </div>
@@ -189,9 +190,9 @@ const FormularioVentas = ({ productos, ventas, initialVenta, onVentaRegistrada }
           >
             <option value="efectivo">Efectivo</option>
             <option value="transferencia">Transferencia</option>
-            <option value="tarjeta">Débito</option>
+            <option value="factura">Factura</option>
+            <option value="debito">Debito</option>
             <option value="credito">Crédito</option>
-            <option value="credito">Factura</option>
           </select>
         </div>
 
