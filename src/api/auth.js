@@ -1,7 +1,7 @@
 import apiClient from "./config";
 
 export const login = async (username, password) => {
-  const response = await apiClient.post("/token/", {
+  const response = await apiClient.post("/api/token/", {
     username,
     password,
   });
