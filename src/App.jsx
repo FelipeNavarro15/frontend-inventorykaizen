@@ -451,6 +451,17 @@ const App = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [auth, setAuth] = useState(isAuthenticated());
 
+  // helper to deal with login event
+  const handleLogin = useCallback(() => {
+    setAuth(true);
+    // force a fresh data load after authentication
+    loadProductos();
+    loadVentas();
+    loadCompras();
+    loadInventario();
+    loadReporte();
+  }, [loadProductos, loadVentas, loadCompras, loadInventario, loadReporte]);
+
   const loadProductos = useCallback(async () => {
     try {
       const data = await fetchProductos();
@@ -496,14 +507,16 @@ const App = () => {
     }
   }, []);
 
-  // Cargar datos solo una vez al montar
+  // Cargar datos cuando el usuario está autenticado (al montar o al iniciar sesión)
   useEffect(() => {
+    if (!auth) return; // no intentar cargar si no está autenticado
+
     loadProductos();
     loadVentas();
     loadCompras();
     loadInventario();
     loadReporte();
-  }, [loadProductos, loadVentas, loadCompras, loadInventario, loadReporte]);
+  }, [auth, loadProductos, loadVentas, loadCompras, loadInventario, loadReporte]);
 
   // Función helper para calcular la semana ISO con formato personalizado
   const getWeekInfo = (dateStr) => {
@@ -1413,7 +1426,7 @@ const App = () => {
   
   // Retornar Login o Dashboard basado en autenticación
   if (!auth) {
-    return <Login onLogin={() => setAuth(true)} />;
+    return <Login onLogin={handleLogin} />;
   }
 
   return (
