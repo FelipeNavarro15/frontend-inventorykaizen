@@ -1,3 +1,4 @@
+// src/api/productos.js
 import apiClient from './config';
 
 // Obtener todos los productos

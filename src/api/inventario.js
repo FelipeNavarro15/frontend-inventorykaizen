@@ -1,3 +1,4 @@
+// src/api/inventario.js
 import apiClient from './config';
 
 // Obtener inventario

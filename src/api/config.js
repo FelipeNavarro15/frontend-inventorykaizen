@@ -1,8 +1,9 @@
+// src/api/config.js
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL;
+// Si VITE_API_URL no existe, usará la de producción por defecto
+const API_URL = import.meta.env.VITE_API_URL || 'https://backend-inventorykaizen.onrender.com';
 
-// Crear instancia de axios con configuración base
 const apiClient = axios.create({
   baseURL: API_URL,
   headers: {
