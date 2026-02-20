@@ -48,4 +48,8 @@ Para que esta interfaz funcione correctamente, debe estar conectada al servidor 
 👉 [Repositorio del Backend](https://github.com/FelipeNavarro15/backend-inventorykaizen)
 
 👤 Autor
+<<<<<<< HEAD
 Felipe Navarro - FelipeNavarro15
+=======
+Felipe Navarro - FelipeNavarro15
+>>>>>>> de2d12cfc95b13e0c0b69e6011b72b444d455001
