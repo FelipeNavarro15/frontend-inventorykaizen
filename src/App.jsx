@@ -54,10 +54,16 @@ const FormularioVentas = ({ productos, ventas, initialVenta, onVentaRegistrada }
     }
   );
   const [loading, setLoading] = useState(false);
+  const [productSearch, setProductSearch] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const editingId = initialVenta?.id;
 
+  // cuando se carga un venta para editar, también mostramos el nombre del producto
   useEffect(() => {
     if (initialVenta) {
+      const prod = productos.find(p => p.id === initialVenta.producto);
+      setProductSearch(prod ? prod.nombre : '');
+      setShowSuggestions(false);
       setVentaForm({
         producto: initialVenta.producto,
         fecha: initialVenta.fecha,
@@ -69,16 +75,31 @@ const FormularioVentas = ({ productos, ventas, initialVenta, onVentaRegistrada }
         pagado: initialVenta.pagado
       });
     }
-  }, [initialVenta]);
+  }, [initialVenta, productos]);
 
   const handleCreateVenta = useCallback(async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    // si no tenemos id pero sí un nombre, intentamos resolverlo
+    const formToSend = { ...ventaForm };
+    if (!formToSend.producto && productSearch) {
+      const match = productos.find(p => p.nombre.toLowerCase() === productSearch.toLowerCase());
+      if (match) {
+        formToSend.producto = match.id;
+      }
+    }
+    if (!formToSend.producto) {
+      alert('Por favor selecciona un producto válido de la lista');
+      setLoading(false);
+      return;
+    }
+
     try {
       if (editingId) {
-        await updateVenta(editingId, ventaForm);
+        await updateVenta(editingId, formToSend);
       } else {
-        await createVenta(ventaForm);
+        await createVenta(formToSend);
       }
       setVentaForm({
         producto: '',
@@ -90,6 +111,8 @@ const FormularioVentas = ({ productos, ventas, initialVenta, onVentaRegistrada }
         precio_unitario: '',
         pagado: true
       });
+      setProductSearch('');
+      setShowSuggestions(false);
       alert(editingId ? 'Venta actualizada exitosamente' : 'Venta registrada exitosamente');
       if (onVentaRegistrada) onVentaRegistrada();
     } catch (error) {
@@ -97,24 +120,44 @@ const FormularioVentas = ({ productos, ventas, initialVenta, onVentaRegistrada }
       alert('Error al registrar/actualizar venta');
     }
     setLoading(false);
-  }, [ventaForm, editingId]);
+  }, [ventaForm, editingId, productSearch, productos]);
 
   return (
     <>
       <form onSubmit={handleCreateVenta} className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-        <div className="col-span-2 md:col-span-1">
+<div className="col-span-2 md:col-span-1 relative">
           <label className="block text-xs md:text-sm font-medium mb-1">Producto *</label>
-          <select
-            value={ventaForm.producto}
-            onChange={(e) => setVentaForm({ ...ventaForm, producto: e.target.value })}
+          <input
+            type="text"
+            value={productSearch}
+            onChange={(e) => {
+              setProductSearch(e.target.value);
+              setVentaForm({ ...ventaForm, producto: '' });
+              setShowSuggestions(true);
+            }}
             className="w-full border rounded px-3 py-2 text-xs md:text-sm"
+            placeholder="Escribe para buscar..."
             required
-          >
-            <option value="">Seleccionar producto</option>
-            {productos.map(p => (
-              <option key={p.id} value={p.id}>{p.nombre}</option>
-            ))}
-          </select>
+          />
+          {showSuggestions && productSearch && (
+            <ul className="absolute z-10 bg-white border w-full max-h-40 overflow-auto mt-1 shadow">
+              {productos
+                .filter(p => p.nombre.toLowerCase().includes(productSearch.toLowerCase()))
+                .map(p => (
+                  <li
+                    key={p.id}
+                    className="px-2 py-1 hover:bg-gray-100 cursor-pointer text-xs md:text-sm"
+                    onClick={() => {
+                      setProductSearch(p.nombre);
+                      setVentaForm({ ...ventaForm, producto: p.id });
+                      setShowSuggestions(false);
+                    }}
+                  >
+                    {p.nombre}
+                  </li>
+                ))}
+            </ul>
+          )}
         </div>
 
         <div>
@@ -1017,6 +1060,49 @@ const App = () => {
             <p className="text-gray-500 text-center py-8">No hay datos</p>
           )}
         </div>
+
+        {/* Historial de ventas en análisis de ingresos (solo lectura) */}
+        <div className="bg-white rounded-lg shadow mt-6">
+          <div className="p-4 md:p-6">
+            <h3 className="text-lg md:text-xl font-bold mb-4">Historial de Ventas</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs sm:text-sm">
+              <thead className="bg-gray-100 sticky top-0">
+                <tr>
+                  <th className="p-2 md:p-3 text-left whitespace-nowrap">N°</th>
+                  <th className="p-2 md:p-3 text-left whitespace-nowrap">Fecha</th>
+                  <th className="p-2 md:p-3 text-left whitespace-nowrap">Producto</th>
+                  <th className="p-2 md:p-3 text-left whitespace-nowrap">Cliente</th>
+                  <th className="p-2 md:p-3 text-left hidden lg:table-cell whitespace-nowrap">Canal</th>
+                  <th className="p-2 md:p-3 text-left whitespace-nowrap">Cant.</th>
+                  <th className="p-2 md:p-3 text-left whitespace-nowrap">P. Unit.</th>
+                  <th className="p-2 md:p-3 text-left whitespace-nowrap">Total</th>
+                  <th className="p-2 md:p-3 text-left whitespace-nowrap">Pagado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ventasArray.map(v => (
+                  <tr key={v.id} className="border-b text-xs md:text-sm">
+                    <td className="p-2 md:p-3 font-semibold whitespace-nowrap">#{v.numero}</td>
+                    <td className="p-2 md:p-3 whitespace-nowrap">{formatearFecha(v.fecha)}</td>
+                    <td className="p-2 md:p-3 whitespace-nowrap">{v.producto_nombre}</td>
+                    <td className="p-2 md:p-3 whitespace-nowrap">{v.cliente}</td>
+                    <td className="p-2 md:p-3 hidden lg:table-cell whitespace-nowrap">{v.canal_venta}</td>
+                    <td className="p-2 md:p-3 whitespace-nowrap">{v.cantidad}</td>
+                    <td className="p-2 md:p-3 whitespace-nowrap">${v.precio_unitario}</td>
+                    <td className="p-2 md:p-3 font-bold whitespace-nowrap">${v.total || 0}</td>
+                    <td className="p-2 md:p-3 whitespace-nowrap">
+                      <span className={`px-2 py-1 rounded text-white text-xs font-semibold ${v.pagado ? 'bg-green-500' : 'bg-red-500'}`}>
+                        {v.pagado ? 'Sí' : 'No'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     );
   };
@@ -1216,7 +1302,7 @@ const App = () => {
                   <th className="p-2 md:p-3 text-left whitespace-nowrap">N°</th>
                   <th className="p-2 md:p-3 text-left whitespace-nowrap">Fecha</th>
                   <th className="p-2 md:p-3 text-left whitespace-nowrap">Producto</th>
-                  <th className="p-2 md:p-3 text-left hidden md:table-cell whitespace-nowrap">Cliente</th>
+                  <th className="p-2 md:p-3 text-left whitespace-nowrap">Cliente</th>
                   <th className="p-2 md:p-3 text-left hidden lg:table-cell whitespace-nowrap">Canal</th>
                   <th className="p-2 md:p-3 text-left whitespace-nowrap">Cant.</th>
                   <th className="p-2 md:p-3 text-left whitespace-nowrap">P. Unit.</th>
@@ -1235,7 +1321,7 @@ const App = () => {
                     <td className="p-2 md:p-3 font-semibold text-xs md:text-sm whitespace-nowrap">#{v.numero}</td>
                     <td className="p-2 md:p-3 text-xs md:text-sm whitespace-nowrap">{formatearFecha(v.fecha)}</td>
                     <td className="p-2 md:p-3 text-xs md:text-sm whitespace-nowrap">{v.producto_nombre}</td>
-                    <td className="p-2 md:p-3 text-xs md:text-sm hidden md:table-cell whitespace-nowrap">{v.cliente}</td>
+                    <td className="p-2 md:p-3 text-xs md:text-sm whitespace-nowrap">{v.cliente}</td>
                     <td className="p-2 md:p-3 text-xs md:text-sm hidden lg:table-cell whitespace-nowrap">{v.canal_venta}</td>
                     <td className="p-2 md:p-3 text-xs md:text-sm whitespace-nowrap">{v.cantidad}</td>
                     <td className="p-2 md:p-3 text-xs md:text-sm whitespace-nowrap">${v.precio_unitario}</td>
@@ -1446,9 +1532,10 @@ const App = () => {
             logout();
             setAuth(false);
           }}
-          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition flex items-center gap-2 text-sm md:text-base"
+          className="bg-red-500 hover:bg-red-600 text-white p-2 rounded transition"
+          title="Cerrar sesión"
         >
-          🚪 Cerrar sesión
+          🚪
         </button>
       </nav>
 

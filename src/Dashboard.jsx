@@ -27,9 +27,10 @@ function Dashboard({ setAuth, productos, ventas, compras, inventario, reporte, a
         <h1 className="text-lg md:text-2xl font-bold flex-1 md:flex-initial">Sistema de Inventario - Kaizen F&F</h1>
         <button 
           onClick={handleLogout}
-          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition flex items-center gap-2"
+          className="bg-red-500 hover:bg-red-600 text-white p-2 rounded transition"
+          title="Cerrar sesión"
         >
-          🚪 Cerrar sesión
+          🚪
         </button>
       </nav>
 
