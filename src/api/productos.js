@@ -15,7 +15,19 @@ export const fetchProductos = async () => {
 // Crear un nuevo producto
 export const createProducto = async (productoData) => {
   try {
-    const response = await apiClient.post('/api/productos/', productoData);
+    let data = productoData;
+    let headers = {};
+    if (productoData.imagen) {
+      const formData = new FormData();
+      for (const key in productoData) {
+        if (productoData[key] !== null && productoData[key] !== undefined) {
+          formData.append(key, productoData[key]);
+        }
+      }
+      data = formData;
+      headers['Content-Type'] = 'multipart/form-data';
+    }
+    const response = await apiClient.post('/api/productos/', data, { headers });
     return response.data;
   } catch (error) {
     console.error('Error al crear producto:', error);
@@ -26,7 +38,19 @@ export const createProducto = async (productoData) => {
 // Actualizar un producto existente
 export const updateProducto = async (id, productoData) => {
   try {
-    const response = await apiClient.put(`/api/productos/${id}/`, productoData);
+    let data = productoData;
+    let headers = {};
+    if (productoData.imagen) {
+      const formData = new FormData();
+      for (const key in productoData) {
+        if (productoData[key] !== null && productoData[key] !== undefined) {
+          formData.append(key, productoData[key]);
+        }
+      }
+      data = formData;
+      headers['Content-Type'] = 'multipart/form-data';
+    }
+    const response = await apiClient.put(`/api/productos/${id}/`, data, { headers });
     return response.data;
   } catch (error) {
     console.error('Error al actualizar producto:', error);

@@ -149,7 +149,7 @@ const FormularioVentas = ({ productos, ventas, initialVenta, onVentaRegistrada }
                     className="px-2 py-1 hover:bg-gray-100 cursor-pointer text-xs md:text-sm"
                     onClick={() => {
                       setProductSearch(p.nombre);
-                      setVentaForm({ ...ventaForm, producto: p.id });
+                      setVentaForm({ ...ventaForm, producto: p.id, precio_unitario: p.precio_unitario ? p.precio_unitario.toString() : '' });
                       setShowSuggestions(false);
                     }}
                   >
@@ -392,7 +392,9 @@ const FormularioProductos = ({ onProductoRegistrado, initialProducto }) => {
   const [productoForm, setProductoForm] = useState({
     nombre: '',
     unidad_medida: '',
-    descripcion: ''
+    descripcion: '',
+    precio_unitario: '',
+    imagen: null
   });
   const [loading, setLoading] = useState(false);
   const editingId = initialProducto?.id;
@@ -402,13 +404,15 @@ const FormularioProductos = ({ onProductoRegistrado, initialProducto }) => {
       setProductoForm({
         nombre: initialProducto.nombre,
         unidad_medida: initialProducto.unidad_medida,
-        descripcion: initialProducto.descripcion || ''
+        precio_unitario: initialProducto.precio_unitario || '',
+        imagen: null // No cargar imagen existente para edición, solo subir nueva si se quiere cambiar
       });
     } else {
       setProductoForm({
         nombre: '',
         unidad_medida: '',
-        descripcion: ''
+        precio_unitario: '',
+        imagen: null
       });
     }
   }, [initialProducto]);
@@ -425,7 +429,8 @@ const FormularioProductos = ({ onProductoRegistrado, initialProducto }) => {
       setProductoForm({
         nombre: '',
         unidad_medida: '',
-        descripcion: ''
+        precio_unitario: '',
+        imagen: null
       });
       alert(editingId ? 'Producto actualizado exitosamente' : 'Producto creado exitosamente');
       if (onProductoRegistrado) onProductoRegistrado();
@@ -437,7 +442,7 @@ const FormularioProductos = ({ onProductoRegistrado, initialProducto }) => {
   }, [productoForm, editingId]);
 
   return (
-    <form onSubmit={handleCreateProducto} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+    <form onSubmit={handleCreateProducto} className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
       <div className="sm:col-span-2 md:col-span-1">
         <label className="block text-xs md:text-sm font-medium mb-1">Nombre *</label>
         <input
@@ -461,17 +466,41 @@ const FormularioProductos = ({ onProductoRegistrado, initialProducto }) => {
         />
       </div>
 
-      <div className="sm:col-span-2 md:col-span-3">
-        <label className="block text-xs md:text-sm font-medium mb-1">Descripción</label>
-        <textarea
-          value={productoForm.descripcion}
-          onChange={(e) => setProductoForm({ ...productoForm, descripcion: e.target.value })}
+      <div>
+        <label className="block text-xs md:text-sm font-medium mb-1">Precio Unitario</label>
+        <input
+          type="number"
+          step="1"
+          value={productoForm.precio_unitario}
+          onChange={(e) => setProductoForm({ ...productoForm, precio_unitario: e.target.value })}
           className="w-full border rounded px-3 py-2 text-xs md:text-sm"
-          rows="3"
+          placeholder="0"
         />
       </div>
 
-      <div className="sm:col-span-2 md:col-span-3">
+      <div className="col-span-2 md:col-span-3">
+        <label className="block text-xs md:text-sm font-medium mb-1">Imagen</label>
+        <div className="flex gap-4 items-end">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setProductoForm({ ...productoForm, imagen: e.target.files[0] })}
+            className="flex-1 border rounded px-3 py-2 text-xs md:text-sm"
+          />
+          {editingId && initialProducto?.imagen && (
+            <div className="flex-shrink-0">
+              <p className="text-xs text-gray-600 mb-1">Imagen actual:</p>
+              <img
+                src={initialProducto.imagen}
+                alt="Imagen actual del producto"
+                className="w-32 h-32 object-cover rounded border"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="col-span-2 md:col-span-3">
         <button
           type="submit"
           disabled={loading}
@@ -1480,8 +1509,11 @@ const App = () => {
                         <span className="font-semibold">Unidad:</span>{' '}
                         <span className="text-gray-600">{p.unidad_medida}</span>
                       </p>
-                      {p.descripcion && (
-                        <p className="text-gray-600 mt-2">{p.descripcion}</p>
+                      {p.precio_unitario && (
+                        <p>
+                          <span className="font-semibold">Precio:</span>{' '}
+                          <span className="text-gray-600">${p.precio_unitario}</span>
+                        </p>
                       )}
                     </div>
                   </div>
