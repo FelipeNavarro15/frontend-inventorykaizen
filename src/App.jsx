@@ -4,7 +4,7 @@ import ComprasPadre from './ComprasPadre';
 import { createVenta, updateVenta, deleteVenta, fetchVentas, fetchAllVentas } from './api/ventas';
 import { createCompra, fetchAllCompras } from './api/compras';
 import { createProducto, updateProducto, deleteProducto, fetchProductos } from './api/productos';
-import { fetchInventario, fetchReporteFinanciero } from './api/inventario';
+import { fetchInventario, fetchReporteFinanciero, createAjuste, setMinimo, fetchAjustes } from './api/inventario';
 import {
   fetchMovimientos,
   fetchBalanceFinanciero,
@@ -724,6 +724,7 @@ const App = () => {
     stock_real: '',
     comentario: ''
   });
+  const [minimoInput, setMinimoInput] = useState('');
 
   const [sortColumn, setSortColumn] = useState('');
   const [sortOrder, setSortOrder] = useState('asc');
@@ -774,6 +775,15 @@ const App = () => {
       setInventario(data);
     } catch (error) {
       console.error('Error:', error);
+    }
+  }, []);
+
+  const loadAjustes = useCallback(async () => {
+    try {
+      const data = await fetchAjustes();
+      setInventoryAdjustments(Array.isArray(data) ? data : data.results ?? []);
+    } catch (error) {
+      console.error('Error al cargar ajustes:', error);
     }
   }, []);
 
@@ -958,6 +968,25 @@ const App = () => {
     setDetailModalOpen(true);
   };
 
+  const handleSetMinimo = async () => {
+    if (!selectedInventoryItem) return;
+    const productoId = selectedInventoryItem.producto ?? selectedInventoryItem.id ?? selectedInventoryItem.producto_id;
+    const minimoVal = Number(minimoInput);
+    if (Number.isNaN(minimoVal)) {
+      alert('Introduce un número válido');
+      return;
+    }
+    try {
+      await setMinimo({ productoId, minimo: minimoVal });
+      await loadInventario();
+      setMinimoInput('');
+      alert('Mínimo actualizado');
+    } catch (err) {
+      console.error('Error al establecer mínimo:', err);
+      alert('Error al guardar mínimo en servidor');
+    }
+  };
+
   const handleOpenAdjustment = (item = null) => {
     setSelectedInventoryItem(item);
     setAdjustmentForm({
@@ -993,32 +1022,24 @@ const App = () => {
       cantidadMovimiento = stock_real - beforeStock;
     }
 
-    setInventario((prevInventario) => prevInventario.map((inv) => {
-      const invKey = String(inv.producto ?? inv.id ?? inv.producto_id);
-      const selectedKey = String(item.producto ?? item.id ?? item.producto_id);
-      if (invKey === selectedKey) {
-        return { ...inv, stock_actual: afterStock };
+    // Enviar al backend y recargar inventario
+    (async () => {
+      try {
+        await createAjuste({
+          productoId: item.producto ?? item.id ?? item.producto_id,
+          type: adjustmentForm.type === 'auditoria' ? 'ajuste' : adjustmentForm.type,
+          cantidad: adjustmentForm.type === 'perdida' ? Math.abs(cantidad) : undefined,
+          stock_real: adjustmentForm.type === 'auditoria' ? Number(adjustmentForm.stock_real) : undefined,
+          comentario: adjustmentForm.comentario
+        });
+        await loadInventario();
+        setAdjustmentModalOpen(false);
+        setDetailModalOpen(false);
+      } catch (err) {
+        console.error('Error al enviar ajuste:', err);
+        alert('Error al registrar ajuste en el servidor');
       }
-      return inv;
-    }));
-
-    setInventoryAdjustments((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        productoId: item.producto ?? item.id ?? item.producto_id,
-        productoNombre: item.producto_nombre || item.nombre || 'Sin nombre',
-        fecha: obtenerFechaLocal(),
-        type: adjustmentForm.type,
-        cantidad: adjustmentForm.type === 'perdida' ? Math.abs(cantidad) : cantidadMovimiento,
-        stockAntes: beforeStock,
-        stockDespues: afterStock,
-        comentario: adjustmentForm.comentario || (adjustmentForm.type === 'perdida' ? 'Pérdida registrada' : 'Ajuste de auditoría')
-      }
-    ]);
-
-    setAdjustmentModalOpen(false);
-    setDetailModalOpen(false);
+    })();
   }, [adjustmentForm, inventoryItemsAll]);
 
   const handleCloseAdjustment = () => {
@@ -1060,6 +1081,7 @@ const App = () => {
     loadVentas({ ordering: orderingValue, filters: appliedFilters });
     loadCompras();
     loadInventario();
+    loadAjustes();
     loadReporte();
     loadFinanzas();
   }, [loadProductos, loadVentas, loadCompras, loadInventario, loadReporte, loadFinanzas, orderingValue, appliedFilters]);
@@ -1071,6 +1093,7 @@ const App = () => {
     loadVentas({ ordering: orderingValue, filters: appliedFilters });
     loadCompras();
     loadInventario();
+    loadAjustes();
     loadReporte();
     loadFinanzas();
   }, [auth, loadProductos, loadVentas, loadCompras, loadInventario, loadReporte, loadFinanzas, orderingValue, appliedFilters]);
@@ -2751,6 +2774,26 @@ const App = () => {
                     <div className="rounded-2xl bg-white p-4 shadow-sm">
                       <p className="text-xs text-slate-500">Stock actual</p>
                       <p className="mt-2 text-2xl font-bold">{selectedInventoryItem.stock_actual}</p>
+                    </div>
+                    <div className="mt-4 rounded-2xl bg-white p-4 shadow-sm">
+                      <p className="text-xs text-slate-500">Mínimo de stock</p>
+                      <div className="mt-2 flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          value={minimoInput}
+                          onChange={(e) => setMinimoInput(e.target.value)}
+                          placeholder={String(selectedInventoryItem.stock_minimo ?? '')}
+                          className="w-32 border rounded px-3 py-2 text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleSetMinimo}
+                          className="rounded bg-indigo-600 px-3 py-2 text-sm text-white hover:bg-indigo-700"
+                        >
+                          Guardar mínimo
+                        </button>
+                      </div>
                     </div>
                     <div className="rounded-2xl bg-white p-4 shadow-sm">
                       <p className="text-xs text-slate-500">Proveedor principal</p>
